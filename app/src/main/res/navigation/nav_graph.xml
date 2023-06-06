@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/letterListFragment">
+
+    <fragment
+        android:id="@+id/letterListFragment"
+        android:name="com.lrm.mywordsfrag.fragments.LetterListFragment"
+        tools:layout="@layout/fragment_letter_list" >
+        <action
+            android:id="@+id/action_letterListFragment_to_wordsListFragment"
+            app:destination="@id/wordsListFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/wordsListFragment"
+        android:name="com.lrm.mywordsfrag.fragments.WordsListFragment"
+        tools:layout="@layout/fragment_words_list" >
+        <action
+            android:id="@+id/action_wordsListFragment_to_letterListFragment"
+            app:destination="@id/letterListFragment" />
+        <argument
+            android:name="letter"
+            app:argType="string" />
+    </fragment>
+</navigation>
