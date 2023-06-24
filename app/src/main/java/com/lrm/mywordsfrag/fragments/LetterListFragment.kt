@@ -5,11 +5,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.lrm.mywordsfrag.adapter.LetterAdapter
+import com.lrm.mywordsfrag.data.SettingsDataStore
 import com.lrm.mywordsfrag.databinding.FragmentLetterListBinding
+import kotlinx.coroutines.launch
 
 class LetterListFragment : Fragment() {
 
@@ -18,11 +22,15 @@ class LetterListFragment : Fragment() {
 
     private lateinit var recyclerView: RecyclerView
 
+    private var linearLayout = true
+
+    private lateinit var layoutDataStore: SettingsDataStore
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentLetterListBinding.inflate(inflater, container, false)
 
         return binding.root
@@ -34,18 +42,48 @@ class LetterListFragment : Fragment() {
         recyclerView = binding.lettersRv
 
         binding.gridIcon.setOnClickListener {
-            recyclerView.layoutManager = GridLayoutManager(requireContext(), 4)
-            binding.gridIcon.visibility = View.INVISIBLE
-            binding.listIcon.visibility = View.VISIBLE
+            linearLayout = false
+            chooseLayout()
+            setIcon()
+            lifecycleScope.launch {
+                layoutDataStore.saveLayoutMode(linearLayout, requireContext())
+            }
         }
 
         binding.listIcon.setOnClickListener {
-            recyclerView.layoutManager = LinearLayoutManager(requireContext())
-            binding.gridIcon.visibility = View.VISIBLE
-            binding.listIcon.visibility = View.INVISIBLE
+            linearLayout = true
+            chooseLayout()
+            setIcon()
+            lifecycleScope.launch {
+                layoutDataStore.saveLayoutMode(linearLayout, requireContext())
+            }
         }
 
+        layoutDataStore = SettingsDataStore(requireContext())
+        layoutDataStore.preferenceFlow.asLiveData().observe(viewLifecycleOwner) { value ->
+            linearLayout = value
+            chooseLayout()
+            setIcon()
+        }
+    }
+
+    fun chooseLayout() {
+        if (linearLayout) {
+            recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        } else {
+            recyclerView.layoutManager = GridLayoutManager(requireContext(), 4)
+        }
         recyclerView.adapter = LetterAdapter()
+    }
+
+    fun setIcon() {
+        if (linearLayout) {
+            binding.gridIcon.visibility = View.VISIBLE
+            binding.listIcon.visibility = View.INVISIBLE
+        } else {
+            binding.gridIcon.visibility = View.INVISIBLE
+            binding.listIcon.visibility = View.VISIBLE
+        }
     }
 
     override fun onDestroyView() {
